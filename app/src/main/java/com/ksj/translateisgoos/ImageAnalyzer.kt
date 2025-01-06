@@ -26,7 +26,7 @@ class ImageAnalyzer(
             textRecognizer.process(image)
                 .addOnSuccessListener { visionText ->
                     if (visionText.text.isNotEmpty())
-                    onTextDetected(visionText.text) // 텍스트 검출 성공 시 콜백 호출
+                        onTextDetected(visionText.text) // 텍스트 검출 성공 시 콜백 호출
                 }
                 .addOnFailureListener {
                     it.printStackTrace() // 에러 처리

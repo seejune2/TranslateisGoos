@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -38,7 +37,6 @@ import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
-import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,9 +55,18 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val context = LocalContext.current
 
+//    val sourceLanguage = TranslateLanguage.KOREAN
+//    val targetLanguage = TranslateLanguage.ENGLISH
+//    val translator = remember(sourceLanguage, targetLanguage) {
+//        val options = TranslatorOptions.Builder()
+//            .setSourceLanguage(sourceLanguage)
+//            .setTargetLanguage(targetLanguage)
+//            .build()
+//        Translation.getClient(options)
+//    }
 
     // 한국어 -> 영어 번역
-    val KoEnTranslator = remember {
+    val koEnTranslator = remember {
         val options = TranslatorOptions.Builder()
             .setSourceLanguage(TranslateLanguage.KOREAN)
             .setTargetLanguage(TranslateLanguage.ENGLISH)
@@ -67,7 +74,7 @@ fun MainScreen() {
         Translation.getClient(options)
     }
     // 영어 -> 한국어 번역
-    val EnKoTranslator = remember {
+    val enKoTranslator = remember {
         val options = TranslatorOptions.Builder()
             .setSourceLanguage(TranslateLanguage.ENGLISH)
             .setTargetLanguage(TranslateLanguage.KOREAN)
@@ -76,11 +83,11 @@ fun MainScreen() {
     }
     // 언어 다운
     var isReady by remember { mutableStateOf(false) }
-    LaunchedEffect(KoEnTranslator) {
+    LaunchedEffect(koEnTranslator) {
         val conditions = DownloadConditions.Builder()
 //        .requireWifi()
             .build()
-        KoEnTranslator.downloadModelIfNeeded(conditions)
+        koEnTranslator.downloadModelIfNeeded(conditions)
             .addOnSuccessListener {
                 isReady = true
             }
@@ -146,12 +153,12 @@ fun MainScreen() {
         Button(
             onClick = {
                 if (isKorean) {
-                    KoEnTranslator.translate(text)
+                    koEnTranslator.translate(text)
                         .addOnSuccessListener { translatedText ->
                             newText = translatedText
                         }
                 } else {
-                    EnKoTranslator.translate(text)
+                    enKoTranslator.translate(text)
                         .addOnSuccessListener { translatedText ->
                             newText = translatedText
                         }
@@ -170,7 +177,7 @@ fun MainScreen() {
         // 이미지 번역(화면전환)
         Button(
             onClick = {
-                var intent = Intent(context, ImageTranslate::class.java)
+                val intent = Intent(context, ImageTranslate::class.java)
                 context.startActivity(intent)
             },
             modifier = Modifier
