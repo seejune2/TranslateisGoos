@@ -37,6 +37,7 @@ import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +65,11 @@ fun MainScreen() {
 //            .build()
 //        Translation.getClient(options)
 //    }
+    var expanded by remember { mutableStateOf(false) }
+    val supportedLanguages = TranslateLanguage.getAllLanguages()
+    val languageList = supportedLanguages.map { languageCode ->
+        Pair(languageCode, Locale(languageCode).displayLanguage)
+    }
 
     // 한국어 -> 영어 번역
     val koEnTranslator = remember {
