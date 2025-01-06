@@ -26,9 +26,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
@@ -73,6 +76,7 @@ class ImageTranslate : ComponentActivity() {
 
 @Composable
 fun CameraPreviewScreen(onTextDetected: (String) -> Unit) {
+    //var isDetected = false
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -81,6 +85,7 @@ fun CameraPreviewScreen(onTextDetected: (String) -> Unit) {
         PreviewView(context)
     }
     val cameraxSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+    //텍스트 인식 및 분석
     val textRecognizer = remember { TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build()) }
     val imageAnalyzer = remember {
         ImageAnalysis.Builder()
@@ -92,11 +97,12 @@ fun CameraPreviewScreen(onTextDetected: (String) -> Unit) {
                     ImageAnalyzer(textRecognizer, onTextDetected)
                 )
             }
+
     }
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview)
+        cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageAnalyzer)
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
     AndroidView(factory = { previewView }, modifier =Modifier.fillMaxSize())
@@ -118,7 +124,7 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
 
 @Composable
 fun ImageTranslateScreen() {
-    var detectedText by remember { mutableStateOf("") }
+    var detectedText : String by remember { mutableStateOf("") }
 
     CameraPreviewScreen(onTextDetected = { text ->
         detectedText = text
@@ -126,8 +132,9 @@ fun ImageTranslateScreen() {
 
     // 검출된 텍스트를 UI에 표시
     Text(
-        text = detectedText,
+        text = if (detectedText.isNotEmpty()) detectedText else "텍스트를 인식 중...",
         modifier = Modifier.fillMaxWidth().padding(16.dp),
+        style = TextStyle(fontSize = 20.sp, color = Color.White)
     )
 
 }

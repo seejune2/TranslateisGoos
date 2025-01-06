@@ -25,6 +25,7 @@ class ImageAnalyzer(
             // ML Kit 텍스트 인식 처리
             textRecognizer.process(image)
                 .addOnSuccessListener { visionText ->
+                    if (visionText.text.isNotEmpty())
                     onTextDetected(visionText.text) // 텍스트 검출 성공 시 콜백 호출
                 }
                 .addOnFailureListener {
