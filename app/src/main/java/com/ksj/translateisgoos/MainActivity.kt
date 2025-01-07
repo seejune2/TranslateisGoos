@@ -2,9 +2,12 @@ package com.ksj.translateisgoos
 
 import android.content.Intent
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -42,6 +46,10 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val supportedLanguages = TranslateLanguage.getAllLanguages()
+        val languageList = supportedLanguages.map { languageCode ->
+            Pair(languageCode, Locale(languageCode).displayLanguage)
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -55,57 +63,50 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
+    var isSource by remember { mutableStateOf(true) }
+    var isTarget by remember { mutableStateOf(false) }
+    var inputLanguage by remember { mutableStateOf(TranslateLanguage.KOREAN) }
+    var outputLanguage by remember { mutableStateOf(TranslateLanguage.ENGLISH) }
 
-//    val sourceLanguage = TranslateLanguage.KOREAN
-//    val targetLanguage = TranslateLanguage.ENGLISH
-//    val translator = remember(sourceLanguage, targetLanguage) {
-//        val options = TranslatorOptions.Builder()
-//            .setSourceLanguage(sourceLanguage)
-//            .setTargetLanguage(targetLanguage)
-//            .build()
-//        Translation.getClient(options)
-//    }
-    var expanded by remember { mutableStateOf(false) }
     val supportedLanguages = TranslateLanguage.getAllLanguages()
     val languageList = supportedLanguages.map { languageCode ->
         Pair(languageCode, Locale(languageCode).displayLanguage)
     }
+    val sourceLanguage = inputLanguage
+    val targetLanguage = outputLanguage
+    val translator = remember(sourceLanguage, targetLanguage) {
+        val options = TranslatorOptions.Builder()
+            .setSourceLanguage(sourceLanguage)
+            .setTargetLanguage(targetLanguage)
+            .build()
+        Translation.getClient(options)
+    }
 
-    // 한국어 -> 영어 번역
-    val koEnTranslator = remember {
-        val options = TranslatorOptions.Builder()
-            .setSourceLanguage(TranslateLanguage.KOREAN)
-            .setTargetLanguage(TranslateLanguage.ENGLISH)
-            .build()
-        Translation.getClient(options)
+    val tts = remember {
+        TextToSpeech(context) { status ->
+            if (status != TextToSpeech.SUCCESS) {
+                // Handle initialization error.
+            }
+        }
     }
-    // 영어 -> 한국어 번역
-    val enKoTranslator = remember {
-        val options = TranslatorOptions.Builder()
-            .setSourceLanguage(TranslateLanguage.ENGLISH)
-            .setTargetLanguage(TranslateLanguage.KOREAN)
-            .build()
-        Translation.getClient(options)
-    }
+
     // 언어 다운
     var isReady by remember { mutableStateOf(false) }
-    LaunchedEffect(koEnTranslator) {
+    LaunchedEffect(translator) {
         val conditions = DownloadConditions.Builder()
 //        .requireWifi()
             .build()
-        koEnTranslator.downloadModelIfNeeded(conditions)
+        translator.downloadModelIfNeeded(conditions)
             .addOnSuccessListener {
                 isReady = true
             }
     }
 
-
+    var inputExpanded by remember { mutableStateOf(false) }
+    var outputExpanded by remember { mutableStateOf(false) }
     var text by remember { mutableStateOf("") }
     var newText by remember { mutableStateOf("") }
-    var isKorean by remember { mutableStateOf(true) }
-    var isEnglish by remember { mutableStateOf(false) }
-    var inputLanguage by remember { mutableStateOf("한국어") }
-    var outputLanguage by remember { mutableStateOf("영어") }
+
 
     Column(
         modifier = Modifier
@@ -117,26 +118,70 @@ fun MainScreen() {
 
         // 상단 언어 변경 메뉴
         Row {
-            Spacer(modifier = Modifier.weight(1f))
-            Text(inputLanguage)
-            Spacer(modifier = Modifier.weight(1f))
+            Button(onClick = { inputExpanded = !inputExpanded }) {
+                Text(inputLanguage)
+            }
+            DropdownMenu(
+                expanded = inputExpanded,
+                onDismissRequest = { inputExpanded = false },
+            ) {
+                Text(
+                    text = "Language",
+                    modifier = Modifier.padding(16.dp)
+                )
+                languageList.forEach { (languageCode, languageName) ->
+                    Text(
+                        text = "$languageCode - $languageName",
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                inputLanguage = languageCode
+
+                            }
+                    )
+                }
+
+            }
             Button(onClick = {
-                isKorean = !isKorean
-                isEnglish = !isEnglish
-                if (isKorean) {
-                    inputLanguage = "한국어"
-                    outputLanguage = "영어"
+                var temp = inputLanguage
+                isSource = !isSource
+                isTarget = !isTarget
+                if (isSource) {
+                    inputLanguage = outputLanguage
+                    outputLanguage = temp
                 } else {
-                    inputLanguage = "영어"
-                    outputLanguage = "한국어"
+                    inputLanguage = outputLanguage
+                    outputLanguage = temp
                 }
 
             }) {
                 Text("언어변경")
             }
-            Spacer(modifier = Modifier.weight(1f))
-            Text(outputLanguage)
-            Spacer(modifier = Modifier.weight(1f))
+            Button(onClick = { outputExpanded = !outputExpanded }) {
+                Text(outputLanguage)
+            }
+            DropdownMenu(
+                expanded = outputExpanded,
+                onDismissRequest = { outputExpanded = false },
+            ) {
+                Text(
+                    text = "Language",
+                    modifier = Modifier.padding(16.dp)
+                )
+                languageList.forEach { (languageCode, languageName) ->
+                    Text(
+                        text = "$languageCode - $languageName",
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                outputLanguage = languageCode
+
+                            }
+                    )
+                }
+            }
+
+
         }
         // 번역할 텍스트
         TextField(
@@ -158,17 +203,10 @@ fun MainScreen() {
         Spacer(modifier = Modifier.weight(1f))
         Button(
             onClick = {
-                if (isKorean) {
-                    koEnTranslator.translate(text)
-                        .addOnSuccessListener { translatedText ->
-                            newText = translatedText
-                        }
-                } else {
-                    enKoTranslator.translate(text)
-                        .addOnSuccessListener { translatedText ->
-                            newText = translatedText
-                        }
-                }
+                translator.translate(text)
+                    .addOnSuccessListener { translatedText ->
+                        newText = translatedText
+                    }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -179,11 +217,33 @@ fun MainScreen() {
         ) {
             Text("번역")
         }
+        Button(
+            onClick = {
+                val locale = getLocaleFromLanguage(outputLanguage)
+                tts.language = locale
+                tts.speak(newText, TextToSpeech.QUEUE_FLUSH, null, null)
+            },
+            enabled = newText.isNotBlank(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(70.dp)
+                .padding(5.dp),
+            shape = RectangleShape
+        ) {
+            Text("번역 읽어줭")
+        }
 
         // 이미지 번역(화면전환)
         Button(
             onClick = {
-                val intent = Intent(context, ImageTranslate::class.java)
+                val intent = Intent(context, ImageTranslate::class.java).apply {
+                    putExtra("sourceLanguage", sourceLanguage)
+                    putExtra("targetLanguage", targetLanguage)
+                }
+                Log.d("MainActivity", "Starting ImageTranslate activity")
+                Log.d("MainActivity", "sourceLanguage: $sourceLanguage")
+                Log.d("MainActivity", "targetLanguage: $targetLanguage")
+
                 context.startActivity(intent)
             },
             modifier = Modifier
@@ -199,6 +259,20 @@ fun MainScreen() {
 
     }
 
+}
+
+fun getLocaleFromLanguage(language: String): Locale {
+    return when (language.lowercase()) {
+        "korean" -> Locale.KOREAN
+        "english" -> Locale.ENGLISH
+        "french" -> Locale.FRENCH
+        "german" -> Locale.GERMAN
+        "japanese" -> Locale.JAPANESE
+        "italian" -> Locale.ITALIAN
+        "spanish" -> Locale("es", "ES")
+        "chinese" -> Locale.CHINESE
+        else -> Locale(language) // 기본적으로 언어 코드로 Locale 생성
+    }
 }
 
 @Preview(showBackground = true)

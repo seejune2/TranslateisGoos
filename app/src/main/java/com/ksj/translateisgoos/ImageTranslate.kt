@@ -1,15 +1,14 @@
 package com.ksj.translateisgoos
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.Composable
-import androidx.core.content.ContextCompat
-import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
-import android.Manifest
-import android.content.Context
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -18,8 +17,8 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,14 +32,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.Translation
+import com.google.mlkit.nl.translate.TranslatorOptions
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
+import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class ImageTranslate : ComponentActivity() {
-
-    private  val cameraPermissionRequest =
+    private val cameraPermissionRequest =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 // 카메라 관련 코드 구현
@@ -51,16 +55,19 @@ class ImageTranslate : ComponentActivity() {
             }
 
         }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(
-                this ,
+                this,
                 Manifest.permission.CAMERA
             ) -> {
                 // 카메라 권한이 이미 부여됨
                 // 카메라 관련 코드 구현
             }
+
             else -> {
                 cameraPermissionRequest.launch(Manifest.permission.CAMERA)
             }
@@ -86,7 +93,9 @@ fun CameraPreviewScreen(onTextDetected: (String) -> Unit) {
     }
     val cameraxSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
     //텍스트 인식 및 분석
-    val textRecognizer = remember { TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build()) }
+    val textRecognizer =
+        remember { TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build()) }
+
     val imageAnalyzer = remember {
         ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -97,15 +106,15 @@ fun CameraPreviewScreen(onTextDetected: (String) -> Unit) {
                     ImageAnalyzer(textRecognizer, onTextDetected)
                 )
             }
-
     }
+
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageAnalyzer)
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
-    AndroidView(factory = { previewView }, modifier =Modifier.fillMaxSize())
+    AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
 
 }
 
@@ -119,22 +128,51 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     }
 
 
-
-
-
 @Composable
 fun ImageTranslateScreen() {
-    var detectedText : String by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val intent = (context as? ImageTranslate)?.intent
+    val sourceLanguage = intent?.getStringExtra("sourceLanguage") ?: TranslateLanguage.KOREAN
+    val targetLanguage = intent?.getStringExtra("targetLanguage") ?: TranslateLanguage.ENGLISH
+
+    Log.d("ImageTranslateScreen", "sourceLanguage: $sourceLanguage")
+    Log.d("ImageTranslateScreen", "targetLanguage: $targetLanguage")
+
+    val translator = remember(sourceLanguage, targetLanguage) {
+        val options = TranslatorOptions.Builder()
+            .setSourceLanguage(sourceLanguage)
+            .setTargetLanguage(targetLanguage)
+            .build()
+        Translation.getClient(options)
+    }
+
+
+    var detectedText: String by remember { mutableStateOf("") }
+    var translatedText: String by remember { mutableStateOf("") }
 
     CameraPreviewScreen(onTextDetected = { text ->
         detectedText = text
     })
 
     // 검출된 텍스트를 UI에 표시
-    Text(
-        text = if (detectedText.isNotEmpty()) detectedText else "텍스트를 인식 중...",
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        style = TextStyle(fontSize = 20.sp, color = Color.White)
-    )
-
+    LaunchedEffect(detectedText) {
+        if (detectedText.isNotEmpty()) {
+            translator.downloadModelIfNeeded(DownloadConditions.Builder().build())
+                .addOnSuccessListener {
+                    translator.translate(detectedText)
+                        .addOnSuccessListener { translated ->
+                            translatedText = translated
+                        }
+                }
+        }
+    }
+    if (translatedText.isNotEmpty()) {
+        Text(
+            text = translatedText,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            style = TextStyle(fontSize = 20.sp, color = Color.White)
+        )
+    }
 }
