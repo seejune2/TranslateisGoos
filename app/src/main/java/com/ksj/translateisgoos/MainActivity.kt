@@ -3,7 +3,6 @@ package com.ksj.translateisgoos
 import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -121,27 +120,7 @@ fun MainScreen() {
             Button(onClick = { inputExpanded = !inputExpanded }) {
                 Text(inputLanguage)
             }
-            DropdownMenu(
-                expanded = inputExpanded,
-                onDismissRequest = { inputExpanded = false },
-            ) {
-                Text(
-                    text = "Language",
-                    modifier = Modifier.padding(16.dp)
-                )
-                languageList.forEach { (languageCode, languageName) ->
-                    Text(
-                        text = "$languageCode - $languageName",
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .clickable {
-                                inputLanguage = languageCode
-
-                            }
-                    )
-                }
-
-            }
+            DropDownMenu(inputExpanded, languageList, inputLanguage)
             Button(onClick = {
                 var temp = inputLanguage
                 isSource = !isSource
@@ -160,26 +139,7 @@ fun MainScreen() {
             Button(onClick = { outputExpanded = !outputExpanded }) {
                 Text(outputLanguage)
             }
-            DropdownMenu(
-                expanded = outputExpanded,
-                onDismissRequest = { outputExpanded = false },
-            ) {
-                Text(
-                    text = "Language",
-                    modifier = Modifier.padding(16.dp)
-                )
-                languageList.forEach { (languageCode, languageName) ->
-                    Text(
-                        text = "$languageCode - $languageName",
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .clickable {
-                                outputLanguage = languageCode
-
-                            }
-                    )
-                }
-            }
+            DropDownMenu(outputExpanded, languageList, outputLanguage)
 
 
         }
@@ -192,7 +152,6 @@ fun MainScreen() {
                 .fillMaxWidth()
                 .height(400.dp)
         )
-
         // 번역된 텍스트
         Box() {
             Text("번역 : ${newText}")
@@ -201,64 +160,75 @@ fun MainScreen() {
 
         // 번역 버튼(비동기)
         Spacer(modifier = Modifier.weight(1f))
-        Button(
-            onClick = {
-                translator.translate(text)
-                    .addOnSuccessListener { translatedText ->
-                        newText = translatedText
-                    }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp)
-                .padding(5.dp),
-            shape = RectangleShape,
-            enabled = isReady
-        ) {
-            Text("번역")
-        }
-        Button(
-            onClick = {
-                val locale = getLocaleFromLanguage(outputLanguage)
-                tts.language = locale
-                tts.speak(newText, TextToSpeech.QUEUE_FLUSH, null, null)
-            },
-            enabled = newText.isNotBlank(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp)
-                .padding(5.dp),
-            shape = RectangleShape
-        ) {
-            Text("번역 읽어줭")
-        }
+        TransButton("번역", enabled = isReady, onClick = {
+            translator.translate(text)
+                .addOnSuccessListener { translatedText ->
+                    newText = translatedText
+                }
+        })
+
+        TransButton("번역 읽어줭", enabled = newText.isNotBlank(), onClick = {
+            val locale = getLocaleFromLanguage(outputLanguage)
+            tts.language = locale
+            tts.speak(newText, TextToSpeech.QUEUE_FLUSH, null, null)
+        })
 
         // 이미지 번역(화면전환)
-        Button(
-            onClick = {
-                val intent = Intent(context, ImageTranslate::class.java).apply {
-                    putExtra("sourceLanguage", sourceLanguage)
-                    putExtra("targetLanguage", targetLanguage)
-                }
-//                Log.d("MainActivity", "Starting ImageTranslate activity")
-//                Log.d("MainActivity", "sourceLanguage: $sourceLanguage")
-//                Log.d("MainActivity", "targetLanguage: $targetLanguage")
+        TransButton("이미지 번역", enabled = isReady, onClick = {
+            val intent = Intent(context, ImageTranslate::class.java).apply {
+                putExtra("sourceLanguage", sourceLanguage)
+                putExtra("targetLanguage", targetLanguage)
+            }
+            context.startActivity(intent)
+        })
+    }
+}
 
-                context.startActivity(intent)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp)
-                .padding(5.dp),
-            shape = RectangleShape,
-            enabled = isReady
-        ) {
-            Text("이미지 번역")
-        }
-
+@Composable
+fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(70.dp)
+            .padding(5.dp),
+        shape = RectangleShape,
+        enabled = enabled
+    ) {
+        Text(text)
 
     }
 
+}
+
+@Composable
+private fun DropDownMenu(
+    outputExpanded: Boolean,
+    languageList: List<Pair<String, String>>,
+    outputLanguage: String
+) {
+    var outputExpanded = outputExpanded
+    var outputLanguage = outputLanguage
+    DropdownMenu(
+        expanded = outputExpanded,
+        onDismissRequest = { outputExpanded = false },
+    ) {
+        Text(
+            text = "Language",
+            modifier = Modifier.padding(16.dp)
+        )
+        languageList.forEach { (languageCode, languageName) ->
+            Text(
+                text = "$languageCode - $languageName",
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable {
+                        outputLanguage = languageCode
+
+                    }
+            )
+        }
+    }
 }
 
 fun getLocaleFromLanguage(language: String): Locale {
