@@ -240,9 +240,9 @@ fun MainScreen() {
                     putExtra("sourceLanguage", sourceLanguage)
                     putExtra("targetLanguage", targetLanguage)
                 }
-                Log.d("MainActivity", "Starting ImageTranslate activity")
-                Log.d("MainActivity", "sourceLanguage: $sourceLanguage")
-                Log.d("MainActivity", "targetLanguage: $targetLanguage")
+//                Log.d("MainActivity", "Starting ImageTranslate activity")
+//                Log.d("MainActivity", "sourceLanguage: $sourceLanguage")
+//                Log.d("MainActivity", "targetLanguage: $targetLanguage")
 
                 context.startActivity(intent)
             },

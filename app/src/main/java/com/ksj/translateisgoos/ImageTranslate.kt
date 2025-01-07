@@ -2,7 +2,6 @@ package com.ksj.translateisgoos
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -14,9 +13,13 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -131,12 +135,14 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
 @Composable
 fun ImageTranslateScreen() {
     val context = LocalContext.current
-    val intent = (context as? ImageTranslate)?.intent
+    val intent =
+        (context as? ImageTranslate)?.intent // 현재 context가 ImageTranslate인 경우에만 intent를 가져옴
+    // val intent = Intent(context, ImageTranslate::class.java) // 새로운 Intent 생성 현재 Intent가 아님 그래서 get못해옴.
     val sourceLanguage = intent?.getStringExtra("sourceLanguage") ?: TranslateLanguage.KOREAN
     val targetLanguage = intent?.getStringExtra("targetLanguage") ?: TranslateLanguage.ENGLISH
 
-    Log.d("ImageTranslateScreen", "sourceLanguage: $sourceLanguage")
-    Log.d("ImageTranslateScreen", "targetLanguage: $targetLanguage")
+//    Log.d("ImageTranslateScreen", "sourceLanguage: $sourceLanguage")
+//    Log.d("ImageTranslateScreen", "targetLanguage: $targetLanguage")
 
     val translator = remember(sourceLanguage, targetLanguage) {
         val options = TranslatorOptions.Builder()
@@ -166,13 +172,33 @@ fun ImageTranslateScreen() {
                 }
         }
     }
-    if (translatedText.isNotEmpty()) {
-        Text(
-            text = translatedText,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            style = TextStyle(fontSize = 20.sp, color = Color.White)
-        )
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    )
+    {
+        if (translatedText.isNotEmpty()) {
+            Text(
+                text = translatedText,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                style = TextStyle(fontSize = 20.sp, color = Color.White)
+            )
+        }
+    }
+    Column(modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.weight(1f))
+        Button(
+            onClick = {
+
+
+            },
+            modifier = Modifier.padding(bottom = 20.dp)
+        ) {
+            Text(text = "찰칵")
+
+        }
     }
 }
