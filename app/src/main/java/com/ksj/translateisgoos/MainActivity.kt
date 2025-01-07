@@ -120,7 +120,26 @@ fun MainScreen() {
             Button(onClick = { inputExpanded = !inputExpanded }) {
                 Text(inputLanguage)
             }
-            DropDownMenu(inputExpanded, languageList, inputLanguage)
+            DropdownMenu(
+                expanded = inputExpanded,
+                onDismissRequest = { inputExpanded = false },
+            ) {
+                Text(
+                    text = "Language",
+                    modifier = Modifier.padding(16.dp)
+                )
+                languageList.forEach { (languageCode, languageName) ->
+                    Text(
+                        text = "$languageCode - $languageName",
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                inputLanguage = languageCode
+
+                            }
+                    )
+                }
+            }
             Button(onClick = {
                 var temp = inputLanguage
                 isSource = !isSource
@@ -139,7 +158,26 @@ fun MainScreen() {
             Button(onClick = { outputExpanded = !outputExpanded }) {
                 Text(outputLanguage)
             }
-            DropDownMenu(outputExpanded, languageList, outputLanguage)
+            DropdownMenu(
+                expanded = inputExpanded,
+                onDismissRequest = { inputExpanded = false },
+            ) {
+                Text(
+                    text = "Language",
+                    modifier = Modifier.padding(16.dp)
+                )
+                languageList.forEach { (languageCode, languageName) ->
+                    Text(
+                        text = "$languageCode - $languageName",
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                inputLanguage = languageCode
+
+                            }
+                    )
+                }
+            }
 
 
         }
@@ -201,35 +239,6 @@ fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
 
 }
 
-@Composable
-private fun DropDownMenu(
-    outputExpanded: Boolean,
-    languageList: List<Pair<String, String>>,
-    outputLanguage: String
-) {
-    var outputExpanded = outputExpanded
-    var outputLanguage = outputLanguage
-    DropdownMenu(
-        expanded = outputExpanded,
-        onDismissRequest = { outputExpanded = false },
-    ) {
-        Text(
-            text = "Language",
-            modifier = Modifier.padding(16.dp)
-        )
-        languageList.forEach { (languageCode, languageName) ->
-            Text(
-                text = "$languageCode - $languageName",
-                modifier = Modifier
-                    .padding(16.dp)
-                    .clickable {
-                        outputLanguage = languageCode
-
-                    }
-            )
-        }
-    }
-}
 
 fun getLocaleFromLanguage(language: String): Locale {
     return when (language.lowercase()) {
