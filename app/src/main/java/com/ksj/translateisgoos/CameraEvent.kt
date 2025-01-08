@@ -42,11 +42,7 @@ sealed class CameraEvent {
                         Toast.makeText(context, "캡쳐 성공", Toast.LENGTH_SHORT).show()
                         val uri = output.savedUri
                         if (uri != null){
-                            val bitmap = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
-                            } else{
-                                MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                            }
+                            val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
                             recognizeAndTranslateText(bitmap)
                         }
                     }
