@@ -110,7 +110,8 @@ class ImageTranslate : ComponentActivity() {
 fun CameraPreviewScreen(
     onTextDetected: (String) -> Unit,
     context: Context,
-    imageCapture: ImageCapture
+    imageCapture: ImageCapture,
+    selectedMode: CameraMode
 ) {
 
     //var isDetected = false
@@ -141,12 +142,23 @@ fun CameraPreviewScreen(
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageAnalyzer)
-        preview.setSurfaceProvider(previewView.surfaceProvider)
+        try {
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner,
+                cameraxSelector,
+                preview,
+                imageCapture,
+                imageAnalyzer
+            )
+            preview.setSurfaceProvider(previewView.surfaceProvider)
+        } catch (exc: Exception) {
+            // Log or handle exception
+        }
     }
     AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
 
 }
+
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine { continuation ->
@@ -179,6 +191,18 @@ fun ImageTranslateScreen() {
     val rotation =
         displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.rotation ?: Surface.ROTATION_90
 
+    var imageTransText: String by remember { mutableStateOf<String>("") }
+    val onTextTranslated: (String) -> Unit = { text ->
+        translator.downloadModelIfNeeded(DownloadConditions.Builder().build())
+            .addOnSuccessListener {
+                translator.translate(text)
+                    .addOnSuccessListener { translated ->
+                        imageTransText = translated
+                    }
+            }
+    }
+
+
     var detectedText: String by remember { mutableStateOf("") }
     var translatedText: String by remember { mutableStateOf("") }
     var imageCapture = remember {
@@ -192,7 +216,8 @@ fun ImageTranslateScreen() {
         onTextDetected = { text ->
             detectedText = text
         }, context = localcontext,
-        imageCapture = imageCapture
+        imageCapture = imageCapture,
+        selectedMode = CameraMode.RIALTIME
     )
 
     // 검출된 텍스트를 UI에 표시
@@ -212,14 +237,26 @@ fun ImageTranslateScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
     )
     {
-        if (translatedText.isNotEmpty()) {
+        if (selectedMode == CameraMode.RIALTIME) {
+            if (translatedText.isNotEmpty()) {
+                Text(
+                    text = translatedText,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    style = TextStyle(fontSize = 20.sp, color = Color.White)
+                )
+            }
+        } else {
             Text(
-                text = translatedText,
+                text = imageTransText,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 style = TextStyle(fontSize = 20.sp, color = Color.White)
             )
+
+
         }
     }
     Column(
@@ -230,7 +267,8 @@ fun ImageTranslateScreen() {
         if (selectedMode == CameraMode.CAPTURE) {
             Button(
                 onClick = {
-                    CameraEvent.OnTakePhotoClick(imageCapture, localcontext).takePhoto()
+                    CameraEvent.OnTakePhotoClick(imageCapture, localcontext, onTextTranslated)
+                        .takePhoto()
                     imageCapture = imageCapture
                     localcontext = localcontext
 
