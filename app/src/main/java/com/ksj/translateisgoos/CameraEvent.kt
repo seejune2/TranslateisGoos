@@ -2,7 +2,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
-import android.os.Build
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.camera.core.ImageCapture
