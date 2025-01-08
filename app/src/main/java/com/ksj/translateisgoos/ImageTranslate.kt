@@ -3,16 +3,16 @@ package com.ksj.translateisgoos
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.display.DisplayManager
 import android.os.Bundle
-import android.os.Environment
-import android.util.Log
+import android.view.Display
+import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -30,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
@@ -50,8 +48,6 @@ import com.google.mlkit.nl.translate.TranslatorOptions
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
-import kotlinx.coroutines.launch
-import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -112,23 +108,17 @@ class ImageTranslate : ComponentActivity() {
 
 @Composable
 fun CameraPreviewScreen(
-    lensFacing: Int,
-    lifecycleOwner: LifecycleOwner,
-    context: Context,
-    previewView: PreviewView,
-    cameraExecutor: java.util.concurrent.Executor,
-    onTextDetected: (String) -> Unit,
-    onCapture: (String) -> Unit
-) {
+    onTextDetected: (String) -> Unit, ){
+
     //var isDetected = false
+    val lensFacing = CameraSelector.LENS_FACING_BACK
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
     val preview = Preview.Builder().build()
-
+    val previewView = remember {
+        PreviewView(context)
+    }
     val cameraxSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    val cameraProviders = cameraProviderFuture.get()
-
-    val cameraExecutor = remember { java.util.concurrent.Executors.newSingleThreadExecutor() }
-
     //텍스트 인식 및 분석
     val textRecognizer =
         remember { TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build()) }
@@ -153,16 +143,8 @@ fun CameraPreviewScreen(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
     AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
-    LaunchedEffect(onCapture) {
-        val imageCapture = ImageCapture.Builder()
-            .setTargetRotation(previewView.display.rotation)
-            .build()
 
-        cameraProviders.bindToLifecycle(lifecycleOwner, cameraxSelector, imageCapture, preview)
-
-    }
 }
-
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine { continuation ->
@@ -176,14 +158,11 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
 
 @Composable
 fun ImageTranslateScreen() {
-    val coroutineScope = rememberCoroutineScope()
     var selectedMode by remember { mutableStateOf(CameraMode.RIALTIME) }
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val previewView = remember { PreviewView(context) }
-    val cameraExecutor = remember { java.util.concurrent.Executors.newSingleThreadExecutor() }
-
-    val intent = (context as? ImageTranslate)?.intent
+    val intent =
+        (context as? ImageTranslate)?.intent // 현재 context가 ImageTranslate인 경우에만 intent를 가져옴
+    // val intent = Intent(context, ImageTranslate::class.java) // 새로운 Intent 생성 현재 Intent가 아님 그래서 get못해옴.
     val sourceLanguage = intent?.getStringExtra("sourceLanguage") ?: TranslateLanguage.KOREAN
     val targetLanguage = intent?.getStringExtra("targetLanguage") ?: TranslateLanguage.ENGLISH
 
@@ -194,93 +173,37 @@ fun ImageTranslateScreen() {
             .build()
         Translation.getClient(options)
     }
+    val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+    val rotation = displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.rotation ?: Surface.ROTATION_0
 
-    var detectedText: String by remember { mutableStateOf("") } // 인식된 텍스트
-    var translatedText: String by remember { mutableStateOf("") } // 번역된 텍스트(실시간)
-    var captureTranslate: String by remember { mutableStateOf("") } // 번역된 텍스트(이미지)
-    var cameraCapture: (suspend () -> Unit)? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(selectedMode) {
-        if (selectedMode == CameraMode.CAPTURE) {
-            cameraCapture = {
-                val imageCapture = ImageCapture.Builder()
-                    .setTargetRotation(previewView.display.rotation)
-                    .build()
-
-                val cameraProvider = context.getCameraProvider()
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, imageCapture)
-
-                val photoFile = File(
-                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                    "photo_${System.currentTimeMillis()}.jpg"
-                )
-                val outputFileOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-                imageCapture.takePicture(outputFileOptions, cameraExecutor,
-                    object : ImageCapture.OnImageSavedCallback {
-                        override fun onError(error: ImageCaptureException) {
-                            Log.e("ImageCapture", "Image capture failed: ${error.message}", error)
-                        }
-
-                        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                            captureTranslate = photoFile.absolutePath // 이미지 경로를 onCapture로 전달
-                        }
-                    })
-            }
-        } else {
-            cameraCapture = null
-        }
-    }
-
-    // 실시간 번역 모드
-    if (selectedMode == CameraMode.RIALTIME) {
-        CameraPreviewScreen(
-            lensFacing = CameraSelector.LENS_FACING_BACK,
-            lifecycleOwner = lifecycleOwner,
-            context = context,
-            previewView = previewView,
-            cameraExecutor = cameraExecutor,
-            onTextDetected = { text ->
-                detectedText = text
-            },
-            onCapture = {}
-        )
-
-        // 검출된 텍스트를 UI에 표시
-        LaunchedEffect(detectedText) {
-            if (detectedText.isNotEmpty()) {
-                translator.downloadModelIfNeeded(DownloadConditions.Builder().build())
-                    .addOnSuccessListener {
-                        translator.translate(detectedText)
-                            .addOnSuccessListener { translated ->
-                                translatedText = translated
-                            }
-                    }
-            }
-        }
-    } else {
-        CameraPreviewScreen(
-            lensFacing = CameraSelector.LENS_FACING_BACK,
-            lifecycleOwner = lifecycleOwner,
-            context = context,
-            previewView = previewView,
-            cameraExecutor = cameraExecutor,
-            onTextDetected = { },
-            onCapture = {
-                captureTranslate = it
-            }
-        )
+    var detectedText: String by remember { mutableStateOf("") }
+    var translatedText: String by remember { mutableStateOf("") }
+    val imageCapture = remember {
+        ImageCapture.Builder().build()
     }
 
 
+    CameraPreviewScreen(onTextDetected = { text ->
+        detectedText = text
+    })
 
-
+    // 검출된 텍스트를 UI에 표시
+    LaunchedEffect(detectedText) {
+        if (detectedText.isNotEmpty()) {
+            translator.downloadModelIfNeeded(DownloadConditions.Builder().build())
+                .addOnSuccessListener {
+                    translator.translate(detectedText)
+                        .addOnSuccessListener { translated ->
+                            translatedText = translated
+                        }
+                }
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     )
     {
-        Text(text = "Selected Mode: ${selectedMode.name}")
         if (translatedText.isNotEmpty()) {
             Text(
                 text = translatedText,
@@ -289,41 +212,37 @@ fun ImageTranslateScreen() {
                     .padding(16.dp),
                 style = TextStyle(fontSize = 20.sp, color = Color.White)
             )
-        } else {
-            Text(
-                text = captureTranslate,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                style = TextStyle(fontSize = 20.sp, color = Color.White)
-            )
         }
     }
-
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(1f))
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    cameraCapture?.invoke()
-                }
+        if (selectedMode == CameraMode.CAPTURE) {
+            Button(
+                onClick = {
+                    CameraEvent.OnTakePhotoClick(
+                        imageCapture,
+                        context
+                    )
 
-            },
-            modifier = Modifier.padding(bottom = 20.dp)
-        ) {
-            Text(text = "캡쳐")
 
+                },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Text(text = "찰칵")
+
+            }
         }
         CameraModeButtons(selectedMode) { mode ->
             selectedMode = mode
-            Log.d("selectedMode", selectedMode.toString())
         }
 
     }
+
 }
+
 
 @Composable
 fun CameraModeButtons(selectedMode: CameraMode, onModeSelected: (CameraMode) -> Unit) {
