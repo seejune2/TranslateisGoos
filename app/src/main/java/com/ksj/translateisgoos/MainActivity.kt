@@ -159,8 +159,8 @@ fun MainScreen() {
                 Text(outputLanguage)
             }
             DropdownMenu(
-                expanded = outputExpanded,
-                onDismissRequest = { outputExpanded = false },
+                expanded = inputExpanded,
+                onDismissRequest = { inputExpanded = false },
             ) {
                 Text(
                     text = "Language",
@@ -172,7 +172,7 @@ fun MainScreen() {
                         modifier = Modifier
                             .padding(16.dp)
                             .clickable {
-                                outputLanguage = languageCode
+                                inputLanguage = languageCode
 
                             }
                     )

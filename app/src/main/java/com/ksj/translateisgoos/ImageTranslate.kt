@@ -108,12 +108,14 @@ class ImageTranslate : ComponentActivity() {
 
 @Composable
 fun CameraPreviewScreen(
-    onTextDetected: (String) -> Unit, ){
+    onTextDetected: (String) -> Unit,
+    context: Context,
+    imageCapture: ImageCapture
+) {
 
     //var isDetected = false
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val lifecycleOwner = LocalLifecycleOwner.current
-    val context = LocalContext.current
     val preview = Preview.Builder().build()
     val previewView = remember {
         PreviewView(context)
@@ -159,9 +161,9 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
 @Composable
 fun ImageTranslateScreen() {
     var selectedMode by remember { mutableStateOf(CameraMode.RIALTIME) }
-    val context = LocalContext.current
+    var localcontext = LocalContext.current
     val intent =
-        (context as? ImageTranslate)?.intent // 현재 context가 ImageTranslate인 경우에만 intent를 가져옴
+        (localcontext as? ImageTranslate)?.intent // 현재 context가 ImageTranslate인 경우에만 intent를 가져옴
     // val intent = Intent(context, ImageTranslate::class.java) // 새로운 Intent 생성 현재 Intent가 아님 그래서 get못해옴.
     val sourceLanguage = intent?.getStringExtra("sourceLanguage") ?: TranslateLanguage.KOREAN
     val targetLanguage = intent?.getStringExtra("targetLanguage") ?: TranslateLanguage.ENGLISH
@@ -173,19 +175,25 @@ fun ImageTranslateScreen() {
             .build()
         Translation.getClient(options)
     }
-    val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-    val rotation = displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.rotation ?: Surface.ROTATION_0
+    val displayManager = localcontext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+    val rotation =
+        displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.rotation ?: Surface.ROTATION_90
 
     var detectedText: String by remember { mutableStateOf("") }
     var translatedText: String by remember { mutableStateOf("") }
-    val imageCapture = remember {
-        ImageCapture.Builder().build()
+    var imageCapture = remember {
+        ImageCapture.Builder()
+            .setTargetRotation(rotation)
+            .build()
     }
 
 
-    CameraPreviewScreen(onTextDetected = { text ->
-        detectedText = text
-    })
+    CameraPreviewScreen(
+        onTextDetected = { text ->
+            detectedText = text
+        }, context = localcontext,
+        imageCapture = imageCapture
+    )
 
     // 검출된 텍스트를 UI에 표시
     LaunchedEffect(detectedText) {
@@ -222,18 +230,18 @@ fun ImageTranslateScreen() {
         if (selectedMode == CameraMode.CAPTURE) {
             Button(
                 onClick = {
-                    CameraEvent.OnTakePhotoClick(
-                        imageCapture,
-                        context
-                    )
-
+                    CameraEvent.OnTakePhotoClick(imageCapture, localcontext).takePhoto()
+                    imageCapture = imageCapture
+                    localcontext = localcontext
 
                 },
+
                 modifier = Modifier.padding(bottom = 20.dp)
             ) {
                 Text(text = "찰칵")
 
             }
+
         }
         CameraModeButtons(selectedMode) { mode ->
             selectedMode = mode
