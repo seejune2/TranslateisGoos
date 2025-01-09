@@ -15,10 +15,15 @@ import java.util.Locale
 
 sealed class CameraEvent {
     object OnSwitchCameraClick : CameraEvent()
-    data class OnTakePhotoClick(val imageCapture: ImageCapture, val context: Context, val onTextTranslated: (String) -> Unit) : CameraEvent() {
+    data class OnTakePhotoClick(
+        val imageCapture: ImageCapture,
+        val context: Context,
+        val onTextTranslated: (String) -> Unit
+    ) : CameraEvent() {
         fun takePhoto() {
             // 타임스탬프 이름 및 ContentValues 객체 생성
-            val name = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis())
+            val name =
+                SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis())
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, "IMG_$name.jpg")
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -40,8 +45,13 @@ sealed class CameraEvent {
                     override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                         Toast.makeText(context, "캡쳐 성공", Toast.LENGTH_SHORT).show()
                         val uri = output.savedUri
-                        if (uri != null){
-                            val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
+                        if (uri != null) {
+                            val bitmap = ImageDecoder.decodeBitmap(
+                                ImageDecoder.createSource(
+                                    context.contentResolver,
+                                    uri
+                                )
+                            )
                             recognizeAndTranslateText(bitmap)
                         }
                     }
@@ -53,8 +63,10 @@ sealed class CameraEvent {
                 }
             )
         }
+
         private fun recognizeAndTranslateText(bitmap: Bitmap) {
-            val textRecognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
+            val textRecognizer =
+                TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
             val inputImage = InputImage.fromBitmap(bitmap, 0)
             textRecognizer.process(inputImage)
                 .addOnSuccessListener { visionText ->

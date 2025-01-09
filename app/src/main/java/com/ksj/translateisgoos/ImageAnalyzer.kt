@@ -26,7 +26,8 @@ class ImageAnalyzer(
         // 텍스트 인식 처리
         val mediaImage = imageProxy.image
         if (mediaImage != null) {
-            val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+            val inputImage =
+                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
             textRecognizer.process(inputImage)
                 .addOnSuccessListener { visionText ->
                     lastDetectionTime = System.currentTimeMillis()
