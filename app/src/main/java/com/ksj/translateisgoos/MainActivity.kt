@@ -164,7 +164,7 @@ fun MainScreen() {
                 expanded = outputExpanded,
                 onDismissRequest = { outputExpanded = false },
 
-            ) {
+                ) {
                 Text(
                     text = "Language",
                     modifier = Modifier.padding(16.dp)
@@ -241,8 +241,6 @@ fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
     }
 
 }
-
-
 
 
 @Preview(showBackground = true)
