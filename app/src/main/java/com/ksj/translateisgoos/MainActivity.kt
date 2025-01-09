@@ -302,6 +302,7 @@ fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
             .height(70.dp),
         shape = RectangleShape,
         enabled = enabled,
+        colors = ButtonDefaults.buttonColors(Color(0xFF009688))
     ) {
         Text(
             text,
