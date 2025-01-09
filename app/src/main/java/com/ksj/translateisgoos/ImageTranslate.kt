@@ -26,9 +26,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.Button
@@ -46,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.TextStyle
@@ -294,12 +297,12 @@ fun ImageTranslateScreen() {
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
 
-                        Icon(
-                            Icons.Rounded.Favorite,
-                            contentDescription = "촬영",
-                            tint = Color.Red,
-                            modifier = Modifier.size(200.dp)
-                        )
+                    Icon(
+                        Icons.Rounded.Favorite,
+                        contentDescription = "촬영",
+                        tint = Color.Red,
+                        modifier = Modifier.size(200.dp)
+                    )
 
                 }
             }
@@ -321,7 +324,11 @@ fun CameraModeButtons(selectedMode: CameraMode, onModeSelected: (CameraMode) -> 
                 onClick = { onModeSelected(mode) },
                 colors = ButtonDefaults.buttonColors(
                     if (mode == selectedMode) Color.Transparent else Color.Transparent
-                )
+                ),
+                shape = RectangleShape,
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(70.dp)
             )
             {
                 Text(text = mode.name)
