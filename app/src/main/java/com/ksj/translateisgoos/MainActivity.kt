@@ -6,6 +6,7 @@ import android.speech.tts.TextToSpeech
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,8 +19,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -31,8 +35,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.mlkit.common.model.DownloadConditions
@@ -67,6 +74,8 @@ fun MainScreen() {
     var isTarget by remember { mutableStateOf(false) }
     var inputLanguage by remember { mutableStateOf(TranslateLanguage.KOREAN) }
     var outputLanguage by remember { mutableStateOf(TranslateLanguage.ENGLISH) }
+    var inputButtonText by remember { mutableStateOf(TranslateLanguage.KOREAN) }
+    var outputButtonText by remember { mutableStateOf(TranslateLanguage.ENGLISH) }
 
     val supportedLanguages = TranslateLanguage.getAllLanguages()
     val languageList = supportedLanguages.map { languageCode ->
@@ -118,8 +127,18 @@ fun MainScreen() {
 
         // 상단 언어 변경 메뉴
         Row {
-            Button(onClick = { inputExpanded = !inputExpanded }) {
-                Text(inputLanguage)
+            Button(
+                onClick = { inputExpanded = !inputExpanded }, modifier = Modifier.width(100.dp),
+                shape = RectangleShape, colors = ButtonDefaults.buttonColors(Color.Transparent)
+            ) {
+                Text(
+                    inputButtonText,
+                    style = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = androidx.compose.ui.unit.TextUnit.Unspecified
+                    )
+                )
             }
             DropdownMenu(
                 expanded = inputExpanded,
@@ -136,6 +155,7 @@ fun MainScreen() {
                             .padding(16.dp)
                             .clickable {
                                 inputLanguage = languageCode
+                                inputButtonText = languageName.uppercase()
                                 inputExpanded = false
 
                             }
@@ -157,8 +177,20 @@ fun MainScreen() {
             }) {
                 Text("언어변경")
             }
-            Button(onClick = { outputExpanded = !outputExpanded }) {
-                Text(outputLanguage)
+            Button(
+                onClick = { outputExpanded = !outputExpanded }, modifier = Modifier.width(100.dp),
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(Color.Transparent)
+            ) {
+                Text(
+                    outputButtonText,
+                    style = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = androidx.compose.ui.unit.TextUnit.Unspecified
+                    )
+                )
+
             }
             DropdownMenu(
                 expanded = outputExpanded,
@@ -176,6 +208,7 @@ fun MainScreen() {
                             .padding(16.dp)
                             .clickable {
                                 outputLanguage = languageCode
+                                outputButtonText = languageName.uppercase()
                                 outputExpanded = false
                             },
                     )
@@ -184,23 +217,28 @@ fun MainScreen() {
 
 
         }
+
         // 번역할 텍스트
         TextField(
             value = text,
             onValueChange = { text = it },
             modifier = Modifier
-                .padding(16.dp)
+                .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
-                .height(400.dp)
+                .weight(1f)
         )
         // 번역된 텍스트
-        Box() {
-            Text("번역 : ${newText}")
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+                .weight(1f)
+                .background(color = Color.LightGray)
+        ) {
+            Text(newText)
 
         }
-
         // 번역 버튼(비동기)
-        Spacer(modifier = Modifier.weight(1f))
         TransButton("번역", enabled = isReady, onClick = {
             translator.translate(text)
                 .addOnSuccessListener { translatedText ->
@@ -231,8 +269,7 @@ fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)
-            .padding(5.dp),
+            .height(70.dp),
         shape = RectangleShape,
         enabled = enabled
     ) {

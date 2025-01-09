@@ -19,9 +19,12 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -50,6 +53,7 @@ import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import com.ksj.translateisgoos.MainActivity
 
 class ImageTranslate : ComponentActivity() {
     private val permissionsRequest =
@@ -233,10 +237,13 @@ fun ImageTranslateScreen() {
         }
     }
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(WindowInsets.systemBars.asPaddingValues()),
         horizontalAlignment = Alignment.CenterHorizontally,
     )
     {
+        Text("$selectedMode")
         if (selectedMode == CameraMode.RIALTIME) {
             if (translatedText.isNotEmpty()) {
                 Text(
@@ -297,7 +304,7 @@ fun CameraModeButtons(selectedMode: CameraMode, onModeSelected: (CameraMode) -> 
             Button(
                 onClick = { onModeSelected(mode) },
                 colors = ButtonDefaults.buttonColors(
-                    if (mode == selectedMode) Color.Blue else Color.Gray
+                    if (mode == selectedMode) Color.LightGray else Color.Transparent
                 )
             )
             {
