@@ -1,6 +1,7 @@
 package com.ksj.translateisgoos
 
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import androidx.activity.ComponentActivity
@@ -22,9 +23,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -39,17 +43,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
 import java.util.Locale
-import com.ksj.translateisgoos.GetLocaleFromLanguage
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,6 +82,7 @@ fun MainScreen() {
     var outputLanguage by remember { mutableStateOf(TranslateLanguage.ENGLISH) }
     var inputButtonText by remember { mutableStateOf("한국어") }
     var outputButtonText by remember { mutableStateOf("영어") }
+
 
     val supportedLanguages = TranslateLanguage.getAllLanguages()
     val languageList = supportedLanguages.map { languageCode ->
@@ -129,7 +135,7 @@ fun MainScreen() {
         // 상단 언어 변경 메뉴
         Row {
             Button(
-                onClick = { inputExpanded = !inputExpanded }, modifier = Modifier.width(100.dp),
+                onClick = { inputExpanded = !inputExpanded }, modifier = Modifier.weight(1f),
                 shape = RectangleShape, colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
                 Text(
@@ -137,7 +143,7 @@ fun MainScreen() {
                     style = TextStyle(
                         color = Color.Black,
                         fontWeight = FontWeight.Bold,
-                        fontSize = androidx.compose.ui.unit.TextUnit.Unspecified
+                        fontSize = TextStyle(fontSize = 25.sp).fontSize
                     )
                 )
             }
@@ -158,33 +164,40 @@ fun MainScreen() {
                                 inputLanguage = languageCode
                                 inputButtonText = languageName.uppercase()
                                 inputExpanded = false
-
                             }
                     )
                 }
             }
-            Button(onClick = {
-                var temp = inputLanguage
-                var temp2 = inputButtonText
-                isSource = !isSource
-                isTarget = !isTarget
-                if (isSource) {
-                    inputLanguage = outputLanguage
-                    outputLanguage = temp
-                    inputButtonText = outputButtonText
-                    outputButtonText = temp2
-                } else {
-                    inputLanguage = outputLanguage
-                    outputLanguage = temp
-                    inputButtonText = outputButtonText
-                    outputButtonText = temp2
-                }
-
-            }) {
-                Text("언어변경")
+            IconButton(
+                onClick = {
+                    val temp = inputLanguage
+                    val temp2 = inputButtonText
+                    isSource = !isSource
+                    isTarget = !isTarget
+                    if (isSource) {
+                        inputLanguage = outputLanguage
+                        outputLanguage = temp
+                        inputButtonText = outputButtonText
+                        outputButtonText = temp2
+                    } else {
+                        inputLanguage = outputLanguage
+                        outputLanguage = temp
+                        inputButtonText = outputButtonText
+                        outputButtonText = temp2
+                    }
+                }, modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.repeat),
+                    contentDescription = "repeat",
+                    modifier = Modifier.size(50.dp),
+                    tint = Color.Unspecified
+                )
             }
+
+
             Button(
-                onClick = { outputExpanded = !outputExpanded }, modifier = Modifier.width(100.dp),
+                onClick = { outputExpanded = !outputExpanded }, modifier = Modifier.weight(1f),
                 shape = RectangleShape,
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
@@ -193,9 +206,10 @@ fun MainScreen() {
                     style = TextStyle(
                         color = Color.Black,
                         fontWeight = FontWeight.Bold,
-                        fontSize = androidx.compose.ui.unit.TextUnit.Unspecified
+                        fontSize = TextStyle(fontSize = 25.sp).fontSize
                     )
                 )
+
 
             }
             DropdownMenu(
@@ -227,6 +241,7 @@ fun MainScreen() {
         // 번역할 텍스트
         TextField(
             value = text,
+            textStyle = TextStyle(fontSize = 30.sp),
             onValueChange = { text = it },
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
@@ -242,7 +257,15 @@ fun MainScreen() {
                 .weight(1f)
                 .background(color = Color.White)
         ) {
-            Text(newText)
+            Text(
+                newText,
+                style = TextStyle(
+                    fontSize = 40.sp,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier.padding(start = 10.dp)
+            )
 
         }
         // 번역 버튼(비동기)
@@ -278,12 +301,13 @@ fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
             .fillMaxWidth()
             .height(70.dp),
         shape = RectangleShape,
-        enabled = enabled
+        enabled = enabled,
     ) {
-        Text(text)
-
+        Text(
+            text,
+            style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+        )
     }
-
 }
 
 

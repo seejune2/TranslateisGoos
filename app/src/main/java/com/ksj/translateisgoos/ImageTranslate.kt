@@ -1,5 +1,6 @@
 package com.ksj.translateisgoos
 
+import CameraEvent
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -16,6 +17,8 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,9 +27,14 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,10 +44,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -53,7 +63,7 @@ import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import com.ksj.translateisgoos.MainActivity
+
 
 class ImageTranslate : ComponentActivity() {
     private val permissionsRequest =
@@ -177,7 +187,7 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
 @Composable
 fun ImageTranslateScreen() {
     var selectedMode by remember { mutableStateOf(CameraMode.RIALTIME) }
-    var localcontext = LocalContext.current
+    val localcontext = LocalContext.current
     val intent =
         (localcontext as? ImageTranslate)?.intent // 현재 context가 ImageTranslate인 경우에만 intent를 가져옴
     // val intent = Intent(context, ImageTranslate::class.java) // 새로운 Intent 생성 현재 Intent가 아님 그래서 get못해옴.
@@ -209,7 +219,7 @@ fun ImageTranslateScreen() {
 
     var detectedText: String by remember { mutableStateOf("") }
     var translatedText: String by remember { mutableStateOf("") }
-    var imageCapture = remember {
+    val imageCapture = remember {
         ImageCapture.Builder()
             .setTargetRotation(rotation)
             .build()
@@ -243,7 +253,7 @@ fun ImageTranslateScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
     )
     {
-        Text("$selectedMode")
+        Text("$selectedMode", style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold))
         if (selectedMode == CameraMode.RIALTIME) {
             if (translatedText.isNotEmpty()) {
                 Text(
@@ -272,21 +282,27 @@ fun ImageTranslateScreen() {
     ) {
         Spacer(modifier = Modifier.weight(1f))
         if (selectedMode == CameraMode.CAPTURE) {
-            Button(
+            IconButton(
                 onClick = {
                     CameraEvent.OnTakePhotoClick(imageCapture, localcontext, onTextTranslated)
                         .takePhoto()
-                    imageCapture = imageCapture
-                    localcontext = localcontext
-
                 },
-
                 modifier = Modifier.padding(bottom = 20.dp)
             ) {
-                Text(text = "찰칵")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
 
+                        Icon(
+                            Icons.Rounded.Favorite,
+                            contentDescription = "촬영",
+                            tint = Color.White,
+                            modifier = Modifier.size(200.dp)
+                        )
+
+                }
             }
-
         }
         CameraModeButtons(selectedMode) { mode ->
             selectedMode = mode
@@ -304,7 +320,7 @@ fun CameraModeButtons(selectedMode: CameraMode, onModeSelected: (CameraMode) -> 
             Button(
                 onClick = { onModeSelected(mode) },
                 colors = ButtonDefaults.buttonColors(
-                    if (mode == selectedMode) Color.LightGray else Color.Transparent
+                    if (mode == selectedMode) Color.Transparent else Color.Transparent
                 )
             )
             {
