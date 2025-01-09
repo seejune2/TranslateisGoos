@@ -13,7 +13,7 @@ class ImageAnalyzer(
 ) : ImageAnalysis.Analyzer {
 
     private var lastDetectionTime = 0L
-    private val throttleInterval = 5000L // 5초
+    private val throttleInterval = 3000L // 5초
 
     @OptIn(ExperimentalGetImage::class)
     override fun analyze(imageProxy: ImageProxy) {

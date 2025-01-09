@@ -6,11 +6,13 @@ import android.speech.tts.TextToSpeech
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -42,7 +45,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.mlkit.common.model.DownloadConditions
@@ -103,8 +108,8 @@ fun MainScreen() {
     }
     var inputExpanded by remember { mutableStateOf(false) }
     var outputExpanded by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
-    var newText by remember { mutableStateOf("") }
+    var inputText by remember { mutableStateOf("") }
+    var outputText by remember { mutableStateOf("") }
 
     // 언어 다운
     var isReady by remember { mutableStateOf(false) }
@@ -117,9 +122,7 @@ fun MainScreen() {
                 isReady = true
             }
     }
-
-
-
+    // 메인 화면 시작
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -129,16 +132,18 @@ fun MainScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-        // 상단 언어 변경 메뉴
+        // InputLanguage 선택
         Row {
             Button(
-                onClick = { inputExpanded = !inputExpanded }, modifier = Modifier.weight(1f),
-                shape = RectangleShape, colors = ButtonDefaults.buttonColors(Color.Transparent)
+                onClick = { inputExpanded = !inputExpanded },
+                modifier = Modifier.weight(1f),
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
                 Text(
                     inputButtonText,
                     style = TextStyle(
-                        color = Color.Black,
+                        color = Color(0xFF2A3450),
                         fontWeight = FontWeight.Bold,
                         fontSize = TextStyle(fontSize = 25.sp).fontSize
                     )
@@ -150,8 +155,9 @@ fun MainScreen() {
             ) {
                 Text(
                     text = "Language",
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 )
+
                 languageList.forEach { (languageCode, languageName) ->
                     Text(
                         text = "$languageCode - $languageName",
@@ -161,15 +167,18 @@ fun MainScreen() {
                                 inputLanguage = languageCode
                                 inputButtonText = languageName.uppercase()
                                 inputExpanded = false
-                            }
+                            },
+
                     )
                 }
             }
+
+            // 언어변경 버튼
             IconButton(
                 onClick = {
                     val tempLanguage = inputLanguage
                     val tempButtonText = inputButtonText
-                    val tmeptext = text
+                    val tmeptext = inputText
 
                     inputLanguage = outputLanguage
                     outputLanguage = tempLanguage
@@ -177,8 +186,8 @@ fun MainScreen() {
                     inputButtonText = outputButtonText
                     outputButtonText = tempButtonText
 
-                    text = newText
-                    newText = tmeptext
+                    inputText = outputText
+                    outputText = tmeptext
 
                     isSource = !isSource
                     isTarget = !isTarget
@@ -191,29 +200,26 @@ fun MainScreen() {
                     tint = Color.Unspecified
                 )
             }
-
-
+            // TargetLnaguage 선택
             Button(
-                onClick = { outputExpanded = !outputExpanded }, modifier = Modifier.weight(1f),
+                onClick = { outputExpanded = !outputExpanded },
+                modifier = Modifier.weight(1f),
                 shape = RectangleShape,
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
                 Text(
                     outputButtonText,
                     style = TextStyle(
-                        color = Color.Black,
+                        color = Color(0xFF2A3450),
                         fontWeight = FontWeight.Bold,
                         fontSize = TextStyle(fontSize = 25.sp).fontSize
                     )
                 )
-
-
             }
             DropdownMenu(
                 expanded = outputExpanded,
                 onDismissRequest = { outputExpanded = false },
-
-                ) {
+            ) {
                 Text(
                     text = "Language",
                     modifier = Modifier.padding(16.dp)
@@ -231,15 +237,13 @@ fun MainScreen() {
                     )
                 }
             }
-
-
         }
 
         // 번역할 텍스트
         TextField(
-            value = text,
+            value = inputText,
             textStyle = TextStyle(fontSize = 20.sp),
-            onValueChange = { text = it },
+            onValueChange = { inputText = it },
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
@@ -255,7 +259,7 @@ fun MainScreen() {
                 .background(color = Color.White)
         ) {
             Text(
-                newText,
+                outputText,
                 style = TextStyle(
                     fontSize = 30.sp,
                     color = Color.Black,
@@ -267,16 +271,16 @@ fun MainScreen() {
         }
         // 번역 버튼(비동기)
         TransButton("번역", enabled = isReady, onClick = {
-            translator.translate(text)
+            translator.translate(inputText)
                 .addOnSuccessListener { translatedText ->
-                    newText = translatedText
+                    outputText = translatedText
                 }
         })
 
-        TransButton("번역 읽어줭", enabled = newText.isNotBlank(), onClick = {
+        TransButton("번역 읽어줭", enabled = outputText.isNotBlank(), onClick = {
             val locale = GetLocaleFromLanguage.getLocaleFromLanguage(outputLanguage.uppercase())
             tts.language = locale
-            tts.speak(newText, TextToSpeech.QUEUE_FLUSH, null, null)
+            tts.speak(outputText, TextToSpeech.QUEUE_FLUSH, null, null)
         })
 
         // 이미지 번역(화면전환)
@@ -300,11 +304,15 @@ fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
             .padding(1.dp),
         shape = RectangleShape,
         enabled = enabled,
-        colors = ButtonDefaults.buttonColors(Color(0xFF009688))
+        colors = ButtonDefaults.buttonColors(Color(0xFFF0D3CF))
     ) {
         Text(
             text,
-            style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            style = TextStyle(
+                color = Color(0xFF2A3450),
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
         )
     }
 }

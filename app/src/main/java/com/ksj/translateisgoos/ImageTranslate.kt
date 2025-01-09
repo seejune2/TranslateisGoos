@@ -265,6 +265,7 @@ fun ImageTranslateScreen() {
                     style = TextStyle(fontSize = 20.sp, color = Color.White)
                 )
             }
+            imageTransText = ""
         } else {
             Text(
                 text = imageTransText,
@@ -273,8 +274,7 @@ fun ImageTranslateScreen() {
                     .padding(16.dp),
                 style = TextStyle(fontSize = 20.sp, color = Color.White)
             )
-
-
+            translatedText = ""
         }
     }
     Column(
