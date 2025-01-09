@@ -127,9 +127,10 @@ fun MainScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(WindowInsets.systemBars.asPaddingValues()),
+            .padding(WindowInsets.systemBars.asPaddingValues())
+            .background(color = Color.White),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
         // 상단 언어 변경 메뉴
