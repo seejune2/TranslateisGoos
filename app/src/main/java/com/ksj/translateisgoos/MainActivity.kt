@@ -41,6 +41,7 @@ import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.ksj.translateisgoos.ui.theme.TranslateisGoosTheme
 import java.util.Locale
+import com.ksj.translateisgoos.GetLocaleFromLanguage
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,6 +136,7 @@ fun MainScreen() {
                             .padding(16.dp)
                             .clickable {
                                 inputLanguage = languageCode
+                                inputExpanded = false
 
                             }
                     )
@@ -161,6 +163,7 @@ fun MainScreen() {
             DropdownMenu(
                 expanded = outputExpanded,
                 onDismissRequest = { outputExpanded = false },
+
             ) {
                 Text(
                     text = "Language",
@@ -173,8 +176,8 @@ fun MainScreen() {
                             .padding(16.dp)
                             .clickable {
                                 outputLanguage = languageCode
-
-                            }
+                                outputExpanded = false
+                            },
                     )
                 }
             }
@@ -206,7 +209,7 @@ fun MainScreen() {
         })
 
         TransButton("번역 읽어줭", enabled = newText.isNotBlank(), onClick = {
-            val locale = getLocaleFromLanguage(outputLanguage)
+            val locale = GetLocaleFromLanguage.getLocaleFromLanguage(outputLanguage.uppercase())
             tts.language = locale
             tts.speak(newText, TextToSpeech.QUEUE_FLUSH, null, null)
         })
@@ -240,19 +243,7 @@ fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
 }
 
 
-fun getLocaleFromLanguage(language: String): Locale {
-    return when (language.lowercase()) {
-        "korean" -> Locale.KOREAN
-        "english" -> Locale.ENGLISH
-        "french" -> Locale.FRENCH
-        "german" -> Locale.GERMAN
-        "japanese" -> Locale.JAPANESE
-        "italian" -> Locale.ITALIAN
-        "spanish" -> Locale("es", "ES")
-        "chinese" -> Locale.CHINESE
-        else -> Locale(language) // 기본적으로 언어 코드로 Locale 생성
-    }
-}
+
 
 @Preview(showBackground = true)
 @Composable
