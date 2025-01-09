@@ -265,7 +265,7 @@ fun MainScreen() {
                     color = Color.Black,
                     fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier.padding(start = 10.dp)
+                modifier = Modifier.padding(top = 10.dp, start = 10.dp)
             )
 
         }
@@ -300,7 +300,8 @@ fun TransButton(text: String, onClick: () -> Unit, enabled: Boolean) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp),
+            .height(70.dp)
+            .padding(1.dp),
         shape = RectangleShape,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(Color(0xFF009688))
