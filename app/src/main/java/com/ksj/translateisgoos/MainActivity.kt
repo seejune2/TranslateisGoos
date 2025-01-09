@@ -101,6 +101,10 @@ fun MainScreen() {
             }
         }
     }
+    var inputExpanded by remember { mutableStateOf(false) }
+    var outputExpanded by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf("") }
+    var newText by remember { mutableStateOf("") }
 
     // 언어 다운
     var isReady by remember { mutableStateOf(false) }
@@ -114,10 +118,6 @@ fun MainScreen() {
             }
     }
 
-    var inputExpanded by remember { mutableStateOf(false) }
-    var outputExpanded by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
-    var newText by remember { mutableStateOf("") }
 
 
     Column(
@@ -167,21 +167,21 @@ fun MainScreen() {
             }
             IconButton(
                 onClick = {
-                    val temp = inputLanguage
-                    val temp2 = inputButtonText
+                    val tempLanguage = inputLanguage
+                    val tempButtonText = inputButtonText
+                    val tmeptext = text
+
+                    inputLanguage = outputLanguage
+                    outputLanguage = tempLanguage
+
+                    inputButtonText = outputButtonText
+                    outputButtonText = tempButtonText
+
+                    text = newText
+                    newText = tmeptext
+
                     isSource = !isSource
                     isTarget = !isTarget
-                    if (isSource) {
-                        inputLanguage = outputLanguage
-                        outputLanguage = temp
-                        inputButtonText = outputButtonText
-                        outputButtonText = temp2
-                    } else {
-                        inputLanguage = outputLanguage
-                        outputLanguage = temp
-                        inputButtonText = outputButtonText
-                        outputButtonText = temp2
-                    }
                 }, modifier = Modifier.weight(1f)
             ) {
                 Icon(
