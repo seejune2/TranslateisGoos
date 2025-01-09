@@ -242,7 +242,7 @@ fun MainScreen() {
         // 번역할 텍스트
         TextField(
             value = text,
-            textStyle = TextStyle(fontSize = 30.sp),
+            textStyle = TextStyle(fontSize = 20.sp),
             onValueChange = { text = it },
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
@@ -261,7 +261,7 @@ fun MainScreen() {
             Text(
                 newText,
                 style = TextStyle(
-                    fontSize = 40.sp,
+                    fontSize = 30.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold
                 ),

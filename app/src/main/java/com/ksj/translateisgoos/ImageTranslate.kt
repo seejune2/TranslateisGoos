@@ -186,7 +186,7 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
 
 @Composable
 fun ImageTranslateScreen() {
-    var selectedMode by remember { mutableStateOf(CameraMode.RIALTIME) }
+    var selectedMode by remember { mutableStateOf(CameraMode.REALTIME) }
     val localcontext = LocalContext.current
     val intent =
         (localcontext as? ImageTranslate)?.intent // 현재 context가 ImageTranslate인 경우에만 intent를 가져옴
@@ -231,7 +231,7 @@ fun ImageTranslateScreen() {
             detectedText = text
         }, context = localcontext,
         imageCapture = imageCapture,
-        selectedMode = CameraMode.RIALTIME
+        selectedMode = CameraMode.REALTIME
     )
 
     // 검출된 텍스트를 UI에 표시
@@ -254,7 +254,7 @@ fun ImageTranslateScreen() {
     )
     {
         Text("$selectedMode", style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold))
-        if (selectedMode == CameraMode.RIALTIME) {
+        if (selectedMode == CameraMode.REALTIME) {
             if (translatedText.isNotEmpty()) {
                 Text(
                     text = translatedText,
@@ -297,7 +297,7 @@ fun ImageTranslateScreen() {
                         Icon(
                             Icons.Rounded.Favorite,
                             contentDescription = "촬영",
-                            tint = Color.White,
+                            tint = Color.Red,
                             modifier = Modifier.size(200.dp)
                         )
 
@@ -332,6 +332,6 @@ fun CameraModeButtons(selectedMode: CameraMode, onModeSelected: (CameraMode) -> 
 }
 
 enum class CameraMode {
-    RIALTIME,
+    REALTIME,
     CAPTURE
 }
