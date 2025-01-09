@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -74,8 +75,8 @@ fun MainScreen() {
     var isTarget by remember { mutableStateOf(false) }
     var inputLanguage by remember { mutableStateOf(TranslateLanguage.KOREAN) }
     var outputLanguage by remember { mutableStateOf(TranslateLanguage.ENGLISH) }
-    var inputButtonText by remember { mutableStateOf(TranslateLanguage.KOREAN) }
-    var outputButtonText by remember { mutableStateOf(TranslateLanguage.ENGLISH) }
+    var inputButtonText by remember { mutableStateOf("한국어") }
+    var outputButtonText by remember { mutableStateOf("영어") }
 
     val supportedLanguages = TranslateLanguage.getAllLanguages()
     val languageList = supportedLanguages.map { languageCode ->
@@ -164,14 +165,19 @@ fun MainScreen() {
             }
             Button(onClick = {
                 var temp = inputLanguage
+                var temp2 = inputButtonText
                 isSource = !isSource
                 isTarget = !isTarget
                 if (isSource) {
                     inputLanguage = outputLanguage
                     outputLanguage = temp
+                    inputButtonText = outputButtonText
+                    outputButtonText = temp2
                 } else {
                     inputLanguage = outputLanguage
                     outputLanguage = temp
+                    inputButtonText = outputButtonText
+                    outputButtonText = temp2
                 }
 
             }) {
@@ -225,15 +231,16 @@ fun MainScreen() {
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(1f),
+            colors = OutlinedTextFieldDefaults.colors(unfocusedContainerColor = Color.White),
         )
         // 번역된 텍스트
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp)
+                .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
                 .weight(1f)
-                .background(color = Color.LightGray)
+                .background(color = Color.White)
         ) {
             Text(newText)
 

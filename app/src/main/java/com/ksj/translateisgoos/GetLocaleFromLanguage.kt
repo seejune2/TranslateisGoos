@@ -3,8 +3,8 @@ package com.ksj.translateisgoos
 import java.util.Locale
 
 enum class GetLocaleFromLanguage(val locale: Locale) {
-    KOREAN(Locale.KOREAN),
-    ENGLISH(Locale.ENGLISH),
+    KOREAN(Locale("한국어","KOREA")),
+    ENGLISH(Locale("영어","ENGLISH")),
     FRENCH(Locale.FRENCH),
     GERMAN(Locale.GERMAN),
     JAPANESE(Locale.JAPANESE),
