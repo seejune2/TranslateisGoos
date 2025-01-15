@@ -43,17 +43,9 @@
 
 # 📷 Screenshot
 
-![1](https://github.com/user-attachments/assets/61a0742a-8ddb-419b-83d3-a509f10280e7)
-
-![2](https://github.com/user-attachments/assets/65a8051e-d2cf-459b-b89c-1fc7711995c9)
-
-![3](https://github.com/user-attachments/assets/3b2f671a-6944-4f64-99ec-98ef6ed67cc8)
-
-![4](https://github.com/user-attachments/assets/f16533f7-b496-48ef-ade0-cc3398edba0a)
-
-![5](https://github.com/user-attachments/assets/102809aa-de39-414b-bb24-354db68eaafc)
-
-![6](https://github.com/user-attachments/assets/eeb5882e-3b20-4cf2-b5f3-b665778194a2)
+<img src = "https://github.com/user-attachments/assets/0ba26627-026b-48f1-8c3c-c9521fe87196" width="400" heigth = "600"> <img src = "https://github.com/user-attachments/assets/65a8051e-d2cf-459b-b89c-1fc7711995c9" width="400" heigth = "600">
+<img src = "https://github.com/user-attachments/assets/3b2f671a-6944-4f64-99ec-98ef6ed67cc8" width="400" heigth = "600"> <img src = "https://github.com/user-attachments/assets/f16533f7-b496-48ef-ade0-cc3398edba0a" width="400" heigth = "600">
+<img src = "https://github.com/user-attachments/assets/102809aa-de39-414b-bb24-354db68eaafc" width="400" heigth = "600"> <img src = "https://github.com/user-attachments/assets/eeb5882e-3b20-4cf2-b5f3-b665778194a2" width="400" heigth = "600">
 
 ---
 
