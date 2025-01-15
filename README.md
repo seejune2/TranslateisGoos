@@ -1,4 +1,5 @@
-![joonpago-playstore.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/23df9efd-7793-4306-8450-377de89e7a75/94247c08-cb36-42a3-a3e6-0aa6f2b9282c/joonpago-playstore.png)
+
+![joonpago-playstore](https://github.com/user-attachments/assets/1dfa52d4-bfb8-467f-8919-b5a07b424a6e)
 
 
 # 💡 Topic
@@ -42,17 +43,17 @@
 
 # 📷 Screenshot
 
-![Screenshot_20250110_092806_JOONPAGO.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/23df9efd-7793-4306-8450-377de89e7a75/6782c4aa-d344-4147-93ef-d0182be7c55c/Screenshot_20250110_092806_JOONPAGO.jpg)
+![1](https://github.com/user-attachments/assets/61a0742a-8ddb-419b-83d3-a509f10280e7)
 
-![Screenshot_20250110_092823_JOONPAGO.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/23df9efd-7793-4306-8450-377de89e7a75/b1701141-e8a4-4791-bad9-a0663e8ce03a/Screenshot_20250110_092823_JOONPAGO.jpg)
+![2](https://github.com/user-attachments/assets/65a8051e-d2cf-459b-b89c-1fc7711995c9)
 
-![Screenshot_20250110_093021_JOONPAGO.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/23df9efd-7793-4306-8450-377de89e7a75/40c5e342-9101-4429-a6a8-115536a3ee67/Screenshot_20250110_093021_JOONPAGO.jpg)
+![3](https://github.com/user-attachments/assets/3b2f671a-6944-4f64-99ec-98ef6ed67cc8)
 
-![Screenshot_20250110_093016_JOONPAGO.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/23df9efd-7793-4306-8450-377de89e7a75/6f245e0a-2060-4fa0-98aa-9d95ed55f0fd/Screenshot_20250110_093016_JOONPAGO.jpg)
+![4](https://github.com/user-attachments/assets/f16533f7-b496-48ef-ade0-cc3398edba0a)
 
-![Screenshot_20250110_092924_JOONPAGO.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/23df9efd-7793-4306-8450-377de89e7a75/f52512d7-8e6a-482f-96b8-1bcb4cd9679e/Screenshot_20250110_092924_JOONPAGO.jpg)
+![5](https://github.com/user-attachments/assets/102809aa-de39-414b-bb24-354db68eaafc)
 
-![Screenshot_20250110_092949_JOONPAGO.jpg](https://prod-files-secure.s3.us-west-2.amazonaws.com/23df9efd-7793-4306-8450-377de89e7a75/7f17d10b-f364-4019-8409-a39cda93835d/Screenshot_20250110_092949_JOONPAGO.jpg)
+![6](https://github.com/user-attachments/assets/eeb5882e-3b20-4cf2-b5f3-b665778194a2)
 
 ---
 
